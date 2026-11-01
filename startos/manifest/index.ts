@@ -23,7 +23,7 @@ export const manifest = setupManifest({
     // buzz-relay crate version at the new commit (see UPDATING.md).
     'buzz-relay': {
       source: {
-        dockerBuild: { buildArgs: { IMAGE: 'ghcr.io/block/buzz:sha-9e8c9fc' } },
+        dockerBuild: { buildArgs: { IMAGE: 'ghcr.io/block/buzz:sha-90772a4' } },
       },
       arch: ['x86_64', 'aarch64'],
     },
