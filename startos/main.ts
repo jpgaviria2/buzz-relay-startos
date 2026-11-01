@@ -27,6 +27,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       minioSecretKey: s.minioSecretKey,
       relayPrivateKey: s.relayPrivateKey,
       gitHookHmacSecret: s.gitHookHmacSecret,
+      supportAdmission: s.supportAdmission,
       ownerPubkey: s.ownerPubkey,
       relayUrl: s.relayUrl,
     }))
@@ -39,6 +40,22 @@ export const main = sdk.setupMain(async ({ effects }) => {
   const relayPrivateKey = store?.relayPrivateKey ?? ''
   const gitHookHmacSecret = store?.gitHookHmacSecret ?? ''
   const ownerPubkey = store?.ownerPubkey ?? ''
+  const supportAdmission = store?.supportAdmission
+  const supportAdmissionJson = supportAdmission
+    ? JSON.stringify({
+        support_pubkey: supportAdmission.supportPubkey,
+        escalation_pubkey: supportAdmission.escalationPubkey,
+        grant_ttl_secs: supportAdmission.grantTtlSecs,
+        capabilities: [
+          {
+            generation: supportAdmission.generation,
+            capability: supportAdmission.capability,
+            expires_at: supportAdmission.expiresAt,
+            revoked: false,
+          },
+        ],
+      })
+    : ''
 
   // First start binds the community to whichever address the user settled on;
   // every start after that serves that same host regardless of what relayUrl
@@ -331,6 +348,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
             BUZZ_REQUIRE_AUTH_TOKEN: 'true',
             BUZZ_REQUIRE_RELAY_MEMBERSHIP: 'true',
             BUZZ_ALLOW_NIP_OA_AUTH: 'true',
+            // Strict JSON consumed by the relay's support-only admission plane.
+            // Do not log this value: it contains the raw admission capability.
+            BUZZ_SUPPORT_ADMISSION_JSON: supportAdmissionJson,
             // Set via the set-owner-pubkey action, which actions/setRelayUrl.ts
             // raises as a critical task — the service can't start until it is.
             RELAY_OWNER_PUBKEY: ownerPubkey,

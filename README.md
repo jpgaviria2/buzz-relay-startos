@@ -66,15 +66,17 @@ Two volumes, and they are backed up by different mechanisms — see [Backups and
 
 ## File Models
 
-One model, `store.json`, and it holds both the service's generated secrets and the two fields that decide the relay's identity.
+One model, `store.json`, and it holds the service's generated secrets, support-admission configuration, and the two fields that decide the relay's identity.
 
 | File         | Format | Modelled                | Written by                                     |
 | ------------ | ------ | ----------------------- | ---------------------------------------------- |
 | `store.json` | JSON   | Yes — `FileHelper.json` | Install (`init/seedFiles.ts`), `main`, actions |
 
-**Generated at install, never shown to the user:** `pgPassword`, `redisPassword`, `minioAccessKey`, `minioSecretKey`, `relayPrivateKey`, `gitHookHmacSecret`. These are internal wiring between the relay and its own sidecars; nothing asks the user for them and nothing displays them. `pgPassword` is additionally read at backup time, since the dump authenticates with it.
+**Generated at install:** `pgPassword`, `redisPassword`, `minioAccessKey`, `minioSecretKey`, `relayPrivateKey`, `gitHookHmacSecret`, and the support-admission `capability`. The first six are internal wiring and are never displayed. The capability is an opaque bearer value stored only in `store.json`; the Configure Support Admission action displays it masked and copyable so an operator can provision or rotate an authorized support client. It is never logged. `pgPassword` is additionally read at backup time, since the dump authenticates with it.
 
 **Provided by the user:** `ownerPubkey`, a 64-character hex Nostr public key, set by [Set Relay Owner](#actions). It is deliberately not defaulted.
+
+**Support admission:** `supportAdmission` stores the normalized Hermes support and escalation pubkeys, capability generation and expiry, grant TTL, and raw capability. Install and the `0.2.1:4` migration seed a 30-day grant TTL, a one-year capability, and the current deployment's Hermes and JP pubkeys. `main` serializes these fields as strict JSON into `BUZZ_SUPPORT_ADMISSION_JSON`; customers admitted through it receive access only to the restricted three-person support DM, do not become relay members, and do not enter the ordinary join or age-consent flow.
 
 ### `relayUrl` and `boundRelayUrl` — the distinction that matters
 
@@ -109,7 +111,16 @@ That ordering is deliberate rather than incidental. The address is not auto-defa
 
 ## Actions
 
-Two are user-facing. The third is hidden and reachable only through the task that raises it.
+Three are user-facing. The fourth is hidden and reachable only through the task that raises it.
+
+### Configure Support Admission
+
+Configures and rotates the restricted support-only admission path used for customer, Hermes support, and JP escalation direct messages.
+
+- **What it changes:** the `supportAdmission` section of `store.json`, projected exactly into `BUZZ_SUPPORT_ADMISSION_JSON`.
+- **Validation:** both Nostr pubkeys are normalized to lowercase hex and must be distinct; generation, future expiry, 1–90 day grant TTL, and 32–512 byte ASCII capability are validated before saving.
+- **Secret handling:** the capability field and success result are masked. Generating a replacement capability stops new admissions with the old value after the relay restarts.
+- **Repeat safety:** safe to re-run; the last configuration wins.
 
 ### Manage Members
 
@@ -206,6 +217,7 @@ dependencies: []
 interfaces:
   relay: { type: api, port: 80 }
 actions:
+  - configure-support-admission
   - manage-members
   - set-owner-pubkey
   - set-relay-url # hidden; raised by task only

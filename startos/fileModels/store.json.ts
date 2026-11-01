@@ -10,6 +10,20 @@ const shape = z.looseObject({
   minioSecretKey: z.string().catch(''),
   relayPrivateKey: z.string().catch(''),
   gitHookHmacSecret: z.string().catch(''),
+  // Support-only admission is configured independently of ordinary relay
+  // membership. The capability is an opaque bearer value: keep it only in the
+  // private store and project it directly into the relay environment.
+  supportAdmission: z
+    .looseObject({
+      supportPubkey: z.string(),
+      escalationPubkey: z.string(),
+      generation: z.string(),
+      capability: z.string(),
+      expiresAt: z.number(),
+      grantTtlSecs: z.number(),
+    })
+    .optional()
+    .catch(undefined),
   // Owner's Nostr pubkey (64-char hex). Not auto-generated — the user
   // provides it via the set-owner-pubkey action (see actions/setOwnerPubkey.ts,
   // gated by the critical task actions/setRelayUrl.ts raises).

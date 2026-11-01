@@ -1,21 +1,32 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
+import { storeJson } from '../fileModels/store.json'
+import { defaultSupportAdmission } from '../utils'
 
 export const current = VersionInfo.of({
-  version: '0.2.1:3',
+  version: '0.2.1:4',
   releaseNotes: {
     en_US:
-      'Updates Buzz Relay to the latest upstream build and stops trusting certificates from a compromised certificate authority (eMudhra).',
+      'Adds configurable support-only admission for restricted customer, Hermes, and escalation direct messages.',
     es_ES:
-      'Actualiza Buzz Relay a la última compilación upstream y deja de confiar en los certificados de una autoridad de certificación comprometida (eMudhra).',
+      'Añade admisión configurable solo para soporte para mensajes directos restringidos entre clientes, Hermes y escalamiento.',
     de_DE:
-      'Aktualisiert Buzz Relay auf den neuesten Upstream-Build und vertraut Zertifikaten einer kompromittierten Zertifizierungsstelle (eMudhra) nicht mehr.',
+      'Fügt eine konfigurierbare Support-Zulassung für eingeschränkte Direktnachrichten zwischen Kunden, Hermes und Eskalation hinzu.',
     pl_PL:
-      'Aktualizuje Buzz Relay do najnowszej wersji upstream i przestaje ufać certyfikatom przejętego urzędu certyfikacji (eMudhra).',
+      'Dodaje konfigurowalny dostęp tylko do pomocy dla ograniczonych wiadomości bezpośrednich klienta, Hermes i eskalacji.',
     fr_FR:
-      "Met à jour Buzz Relay vers la dernière version upstream et ne fait plus confiance aux certificats d'une autorité de certification compromise (eMudhra).",
+      "Ajoute une admission d'assistance configurable pour les messages directs restreints entre client, Hermes et l'escalade.",
   },
   migrations: {
-    up: async ({ effects }) => {},
+    up: async ({ effects }) => {
+      const current = await storeJson
+        .read((store) => store.supportAdmission)
+        .once()
+      if (!current) {
+        await storeJson.merge(effects, {
+          supportAdmission: defaultSupportAdmission(),
+        })
+      }
+    },
     down: IMPOSSIBLE,
   },
 })
