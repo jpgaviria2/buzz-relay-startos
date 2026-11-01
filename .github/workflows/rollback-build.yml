@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: rollback-upstream-package-${{ github.ref }}
@@ -43,3 +43,11 @@ jobs:
           pattern: '*.s9pk'
           retention-days: 14
           compression-level: 0
+
+      - name: Publish rollback package
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: rollback-upstream-90772a4
+          name: Clean upstream rollback 90772a4
+          prerelease: true
+          files: '*.s9pk'
