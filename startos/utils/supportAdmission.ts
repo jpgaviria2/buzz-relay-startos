@@ -6,6 +6,7 @@ export const DEFAULT_ESCALATION_PUBKEY =
   '2f204d8cba347e4137cdec9b57352246d06e0d4d85038a3f7d339d8097310a34'
 export const DEFAULT_SUPPORT_GRANT_TTL_SECS = 30 * 24 * 60 * 60
 export const MAX_SUPPORT_CAPABILITY_LIFETIME_SECS = 24 * 60 * 60
+export const SUPPORT_ADMISSION_RELAY_URL = 'wss://buzz.anmore.space'
 
 const CAPABILITY_RANDOM_STRING = { charset: '0-9,a-f', len: 64 } as const
 

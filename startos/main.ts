@@ -12,6 +12,7 @@ import {
   PROXY_PORT,
   RELAY_HEALTH_PORT,
   RELAY_PORT,
+  SUPPORT_ADMISSION_RELAY_URL,
 } from './utils'
 
 export const main = sdk.setupMain(async ({ effects }) => {
@@ -54,13 +55,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Caddy serves the pairing sidecar at PAIRING_PATH on this same address, so
   // there is nothing to look up or store -- it is the community's own URL.
   const pairingUrl = relayUrl ? new URL(PAIRING_PATH, relayUrl).href : ''
-  // Expired support configuration must not prevent the relay from starting.
-  // The operator action rotates it and restarts the service with a fresh
-  // capability. The relay additionally validates this exact host binding.
+  // Keep projecting an expired generation on restart: the relay rejects new
+  // admission with it while retaining grants that were already issued. Gate
+  // this deployment-specific path on the complete, exact bound relay URL.
   const supportAdmissionJson =
-    supportAdmission &&
-    relayHostname === 'buzz.anmore.space' &&
-    supportAdmission.expiresAt > Math.floor(Date.now() / 1000)
+    supportAdmission && relayUrl === SUPPORT_ADMISSION_RELAY_URL
       ? JSON.stringify({
           community_host: relayHostname,
           support_pubkey: supportAdmission.supportPubkey,

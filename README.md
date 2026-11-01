@@ -76,7 +76,7 @@ One model, `store.json`, and it holds the service's generated secrets, support-a
 
 **Provided by the user:** `ownerPubkey`, a 64-character hex Nostr public key, set by [Set Relay Owner](#actions). It is deliberately not defaulted.
 
-**Support admission:** `supportAdmission` is optional and stores the normalized Hermes support and escalation pubkeys, capability generation and expiry, grant TTL, and raw capability. It is created only through **Configure Support Admission**, so upgrading unrelated Buzz installations does not silently enable this deployment-specific path. `main` projects it as strict JSON into `BUZZ_SUPPORT_ADMISSION_JSON` only for `buzz.anmore.space` while the capability remains unexpired; customers admitted through it receive access only to the restricted three-person support DM, do not become relay members, and do not enter the ordinary join or age-consent flow.
+**Support admission:** `supportAdmission` is optional and stores the normalized Hermes support and escalation pubkeys, capability generation and expiry, grant TTL, and raw capability. It is created only through **Configure Support Admission**, and only when `boundRelayUrl` is exactly `wss://buzz.anmore.space`, so upgrading or configuring unrelated Buzz installations does not silently enable this deployment-specific path. `main` projects it as strict JSON into `BUZZ_SUPPORT_ADMISSION_JSON` only for that exact relay URL. It keeps projecting an expired generation across restarts so the relay can preserve already-issued grants while rejecting new admissions. Customers admitted through it receive access only to the restricted three-person support DM, do not become relay members, and do not enter the ordinary join or age-consent flow.
 
 ### `relayUrl` and `boundRelayUrl` — the distinction that matters
 
@@ -118,7 +118,7 @@ Three are user-facing. The fourth is hidden and reachable only through the task 
 Configures and rotates the restricted support-only admission path used for customer, Hermes support, and JP escalation direct messages.
 
 - **What it changes:** the `supportAdmission` section of `store.json`, projected exactly into `BUZZ_SUPPORT_ADMISSION_JSON`.
-- **Validation:** both Nostr pubkeys are normalized to lowercase hex and must be distinct; generation, expiry no more than 24 hours ahead, 1–90 day grant TTL, and 32–512 byte ASCII capability are validated before saving.
+- **Validation:** `boundRelayUrl` must be exactly `wss://buzz.anmore.space`; both Nostr pubkeys are normalized to lowercase hex and must be distinct; expiry and grant TTL must be safe integers; expiry must be in the future and no more than 24 hours ahead; grant TTL must be 1–7,776,000 seconds; and the capability must be 32–512 ASCII characters.
 - **Secret handling:** the capability field and success result are masked. Generating a replacement capability stops new admissions with the old value after the relay restarts.
 - **Repeat safety:** safe to re-run; the last configuration wins.
 

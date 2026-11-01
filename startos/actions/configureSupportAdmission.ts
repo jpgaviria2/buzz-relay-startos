@@ -4,6 +4,7 @@ import { sdk } from '../sdk'
 import {
   defaultSupportAdmission,
   MAX_SUPPORT_CAPABILITY_LIFETIME_SECS,
+  SUPPORT_ADMISSION_RELAY_URL,
   supportCapabilityRandomString,
   toHexPubkey,
 } from '../utils'
@@ -125,6 +126,17 @@ export const configureSupportAdmission = sdk.Action.withInput(
     return current ?? defaultSupportAdmission()
   },
   async ({ effects, input }) => {
+    const boundRelayUrl = await storeJson
+      .read((store) => store.boundRelayUrl)
+      .once()
+    if (boundRelayUrl !== SUPPORT_ADMISSION_RELAY_URL) {
+      throw new Error(
+        i18n(
+          'Support admission is available only when this relay is permanently bound to wss://buzz.anmore.space.',
+        ),
+      )
+    }
+
     const supportPubkey = normalizePublicKey(
       input.supportPubkey,
       i18n('Hermes support'),
@@ -144,13 +156,29 @@ export const configureSupportAdmission = sdk.Action.withInput(
     if (!input.generation.trim()) {
       throw new Error(i18n('Capability generation cannot be blank.'))
     }
-    if (input.expiresAt <= Math.floor(Date.now() / 1000)) {
+    if (!Number.isSafeInteger(input.expiresAt)) {
+      throw new Error(
+        i18n('Capability expiry must be a safe integer Unix timestamp.'),
+      )
+    }
+    if (!Number.isSafeInteger(input.grantTtlSecs)) {
+      throw new Error(
+        i18n(
+          'Support grant lifetime must be a safe integer number of seconds.',
+        ),
+      )
+    }
+    if (input.grantTtlSecs < 1 || input.grantTtlSecs > 7_776_000) {
+      throw new Error(
+        i18n('Support grant lifetime must be between 1 and 7,776,000 seconds.'),
+      )
+    }
+
+    const nowSecs = Math.floor(Date.now() / 1000)
+    if (input.expiresAt <= nowSecs) {
       throw new Error(i18n('Capability expiry must be in the future.'))
     }
-    if (
-      input.expiresAt >
-      Math.floor(Date.now() / 1000) + MAX_SUPPORT_CAPABILITY_LIFETIME_SECS
-    ) {
+    if (input.expiresAt > nowSecs + MAX_SUPPORT_CAPABILITY_LIFETIME_SECS) {
       throw new Error(
         i18n('Capability expiry must be no more than 24 hours in the future.'),
       )

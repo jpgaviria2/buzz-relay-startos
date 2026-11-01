@@ -92,6 +92,10 @@ const dict = {
   'Copy the capability into the authorized support client. It is stored masked and is not written to relay logs.': 123,
   'The ${label} value looks like a private key (nsec), not a public key. Paste an npub or 64-character hex public key instead.': 124,
   'Capability expiry must be no more than 24 hours in the future.': 125,
+  'Support admission is available only when this relay is permanently bound to wss://buzz.anmore.space.': 126,
+  'Capability expiry must be a safe integer Unix timestamp.': 127,
+  'Support grant lifetime must be a safe integer number of seconds.': 128,
+  'Support grant lifetime must be between 1 and 7,776,000 seconds.': 129,
 } as const
 
 /**
