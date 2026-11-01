@@ -24,7 +24,9 @@ export const manifest = setupManifest({
     'buzz-relay': {
       source: {
         dockerBuild: {
-          buildArgs: { IMAGE: 'ghcr.io/jpgaviria2/buzz:sha-fa23788' },
+          buildArgs: {
+            IMAGE: 'ghcr.io/jpgaviria2/buzz-relay-support:sha-fa23788',
+          },
         },
       },
       arch: ['x86_64', 'aarch64'],

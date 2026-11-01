@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 concurrency:
   group: support-admission-package-${{ github.ref }}
@@ -30,16 +31,25 @@ jobs:
           ref: fa2378844b67b5e899f036d9b6a5a03c061955f1
           path: buzz-source
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build the support-capable relay image locally
         run: |
           docker buildx build \
             --platform linux/amd64 \
             --target runtime \
-            --load \
-            --tag ghcr.io/jpgaviria2/buzz:sha-fa23788 \
+            --push \
+            --tag ghcr.io/jpgaviria2/buzz-relay-support:sha-fa23788 \
             --build-arg BUZZ_SOURCE_SHA=fa2378844b67b5e899f036d9b6a5a03c061955f1 \
             --build-arg BUZZ_BUILD_ID=github-actions:${{ github.run_id }}:${{ github.run_attempt }} \
             --build-arg BUZZ_BUILD_URL=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \
+            --cache-from type=gha,scope=support-relay-amd64 \
+            --cache-to type=gha,scope=support-relay-amd64,mode=max \
             buzz-source
 
       - name: Create package signing key
