@@ -78,6 +78,7 @@ export default {
     122: 'Support Admission Updated',
     123: 'Copy the capability into the authorized support client. It is stored masked and is not written to relay logs.',
     124: 'The ${label} value looks like a private key (nsec), not a public key. Paste an npub or 64-character hex public key instead.',
+    125: 'Capability expiry must be no more than 24 hours in the future.',
   },
   de_DE: {
     0: 'Starte Buzz Relay!',
@@ -156,6 +157,7 @@ export default {
     122: 'Support Admission Updated',
     123: 'Copy the capability into the authorized support client. It is stored masked and is not written to relay logs.',
     124: 'The ${label} value looks like a private key (nsec), not a public key. Paste an npub or 64-character hex public key instead.',
+    125: 'Capability expiry must be no more than 24 hours in the future.',
   },
   pl_PL: {
     0: 'Uruchamianie Buzz Relay!',
@@ -234,6 +236,7 @@ export default {
     122: 'Support Admission Updated',
     123: 'Copy the capability into the authorized support client. It is stored masked and is not written to relay logs.',
     124: 'The ${label} value looks like a private key (nsec), not a public key. Paste an npub or 64-character hex public key instead.',
+    125: 'Capability expiry must be no more than 24 hours in the future.',
   },
   fr_FR: {
     0: 'Démarrage de Buzz Relay !',
@@ -312,5 +315,6 @@ export default {
     122: 'Support Admission Updated',
     123: 'Copy the capability into the authorized support client. It is stored masked and is not written to relay logs.',
     124: 'The ${label} value looks like a private key (nsec), not a public key. Paste an npub or 64-character hex public key instead.',
+    125: 'Capability expiry must be no more than 24 hours in the future.',
   },
 } satisfies Record<string, LangDict>

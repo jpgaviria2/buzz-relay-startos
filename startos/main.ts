@@ -41,21 +41,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
   const gitHookHmacSecret = store?.gitHookHmacSecret ?? ''
   const ownerPubkey = store?.ownerPubkey ?? ''
   const supportAdmission = store?.supportAdmission
-  const supportAdmissionJson = supportAdmission
-    ? JSON.stringify({
-        support_pubkey: supportAdmission.supportPubkey,
-        escalation_pubkey: supportAdmission.escalationPubkey,
-        grant_ttl_secs: supportAdmission.grantTtlSecs,
-        capabilities: [
-          {
-            generation: supportAdmission.generation,
-            capability: supportAdmission.capability,
-            expires_at: supportAdmission.expiresAt,
-            revoked: false,
-          },
-        ],
-      })
-    : ''
 
   // First start binds the community to whichever address the user settled on;
   // every start after that serves that same host regardless of what relayUrl
@@ -69,6 +54,28 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Caddy serves the pairing sidecar at PAIRING_PATH on this same address, so
   // there is nothing to look up or store -- it is the community's own URL.
   const pairingUrl = relayUrl ? new URL(PAIRING_PATH, relayUrl).href : ''
+  // Expired support configuration must not prevent the relay from starting.
+  // The operator action rotates it and restarts the service with a fresh
+  // capability. The relay additionally validates this exact host binding.
+  const supportAdmissionJson =
+    supportAdmission &&
+    relayHostname === 'buzz.anmore.space' &&
+    supportAdmission.expiresAt > Math.floor(Date.now() / 1000)
+      ? JSON.stringify({
+          community_host: relayHostname,
+          support_pubkey: supportAdmission.supportPubkey,
+          escalation_pubkey: supportAdmission.escalationPubkey,
+          grant_ttl_secs: supportAdmission.grantTtlSecs,
+          capabilities: [
+            {
+              generation: supportAdmission.generation,
+              capability: supportAdmission.capability,
+              expires_at: supportAdmission.expiresAt,
+              revoked: false,
+            },
+          ],
+        })
+      : ''
 
   /**
    * ======================== PostgreSQL sidecar ========================

@@ -3,6 +3,7 @@ import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import {
   defaultSupportAdmission,
+  MAX_SUPPORT_CAPABILITY_LIFETIME_SECS,
   supportCapabilityRandomString,
   toHexPubkey,
 } from '../utils'
@@ -145,6 +146,14 @@ export const configureSupportAdmission = sdk.Action.withInput(
     }
     if (input.expiresAt <= Math.floor(Date.now() / 1000)) {
       throw new Error(i18n('Capability expiry must be in the future.'))
+    }
+    if (
+      input.expiresAt >
+      Math.floor(Date.now() / 1000) + MAX_SUPPORT_CAPABILITY_LIFETIME_SECS
+    ) {
+      throw new Error(
+        i18n('Capability expiry must be no more than 24 hours in the future.'),
+      )
     }
 
     const supportAdmission = {

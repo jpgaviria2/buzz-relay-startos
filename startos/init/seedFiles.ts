@@ -3,7 +3,6 @@ import { setRelayUrl } from '../actions/setRelayUrl'
 import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
-import { defaultSupportAdmission } from '../utils'
 
 export const seedFiles = sdk.setupOnInit(async (effects, kind) => {
   if (kind !== 'install') return
@@ -17,7 +16,6 @@ export const seedFiles = sdk.setupOnInit(async (effects, kind) => {
     // BUZZ_RELAY_PRIVATE_KEY / BUZZ_GIT_HOOK_HMAC_SECRET to be generated.
     relayPrivateKey: utils.getDefaultString({ charset: '0-9,a-f', len: 64 }),
     gitHookHmacSecret: utils.getDefaultString({ charset: '0-9,a-f', len: 64 }),
-    supportAdmission: defaultSupportAdmission(),
   })
 
   // Head of the setup chain: the address is permanent, so it is chosen first

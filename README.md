@@ -72,11 +72,11 @@ One model, `store.json`, and it holds the service's generated secrets, support-a
 | ------------ | ------ | ----------------------- | ---------------------------------------------- |
 | `store.json` | JSON   | Yes — `FileHelper.json` | Install (`init/seedFiles.ts`), `main`, actions |
 
-**Generated at install:** `pgPassword`, `redisPassword`, `minioAccessKey`, `minioSecretKey`, `relayPrivateKey`, `gitHookHmacSecret`, and the support-admission `capability`. The first six are internal wiring and are never displayed. The capability is an opaque bearer value stored only in `store.json`; the Configure Support Admission action displays it masked and copyable so an operator can provision or rotate an authorized support client. It is never logged. `pgPassword` is additionally read at backup time, since the dump authenticates with it.
+**Generated at install:** `pgPassword`, `redisPassword`, `minioAccessKey`, `minioSecretKey`, `relayPrivateKey`, and `gitHookHmacSecret`. These are internal wiring and are never displayed. `pgPassword` is additionally read at backup time, since the dump authenticates with it. The support-admission capability is generated later only when an operator opens **Configure Support Admission**.
 
 **Provided by the user:** `ownerPubkey`, a 64-character hex Nostr public key, set by [Set Relay Owner](#actions). It is deliberately not defaulted.
 
-**Support admission:** `supportAdmission` stores the normalized Hermes support and escalation pubkeys, capability generation and expiry, grant TTL, and raw capability. Install and the `0.2.1:4` migration seed a 30-day grant TTL, a one-year capability, and the current deployment's Hermes and JP pubkeys. `main` serializes these fields as strict JSON into `BUZZ_SUPPORT_ADMISSION_JSON`; customers admitted through it receive access only to the restricted three-person support DM, do not become relay members, and do not enter the ordinary join or age-consent flow.
+**Support admission:** `supportAdmission` is optional and stores the normalized Hermes support and escalation pubkeys, capability generation and expiry, grant TTL, and raw capability. It is created only through **Configure Support Admission**, so upgrading unrelated Buzz installations does not silently enable this deployment-specific path. `main` projects it as strict JSON into `BUZZ_SUPPORT_ADMISSION_JSON` only for `buzz.anmore.space` while the capability remains unexpired; customers admitted through it receive access only to the restricted three-person support DM, do not become relay members, and do not enter the ordinary join or age-consent flow.
 
 ### `relayUrl` and `boundRelayUrl` — the distinction that matters
 
@@ -118,7 +118,7 @@ Three are user-facing. The fourth is hidden and reachable only through the task 
 Configures and rotates the restricted support-only admission path used for customer, Hermes support, and JP escalation direct messages.
 
 - **What it changes:** the `supportAdmission` section of `store.json`, projected exactly into `BUZZ_SUPPORT_ADMISSION_JSON`.
-- **Validation:** both Nostr pubkeys are normalized to lowercase hex and must be distinct; generation, future expiry, 1–90 day grant TTL, and 32–512 byte ASCII capability are validated before saving.
+- **Validation:** both Nostr pubkeys are normalized to lowercase hex and must be distinct; generation, expiry no more than 24 hours ahead, 1–90 day grant TTL, and 32–512 byte ASCII capability are validated before saving.
 - **Secret handling:** the capability field and success result are masked. Generating a replacement capability stops new admissions with the old value after the relay restarts.
 - **Repeat safety:** safe to re-run; the last configuration wins.
 

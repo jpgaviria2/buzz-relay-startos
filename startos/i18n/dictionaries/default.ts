@@ -91,6 +91,7 @@ const dict = {
   'Support Admission Updated': 122,
   'Copy the capability into the authorized support client. It is stored masked and is not written to relay logs.': 123,
   'The ${label} value looks like a private key (nsec), not a public key. Paste an npub or 64-character hex public key instead.': 124,
+  'Capability expiry must be no more than 24 hours in the future.': 125,
 } as const
 
 /**
